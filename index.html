@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Kinerja TI 2025</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Warna latar belakang gelap */
+        }
+        .card {
+            background-color: #1e293b;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="p-6 md:p-10">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Dashboard -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-4 md:mb-0">Dashboard Kinerja TI 2025</h1>
+            <!-- Dropdown menu dihilangkan -->
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <div id="dashboard-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Card 1: Skor ITML 2025 Per Entitas (Grafik) -->
+            <div class="card lg:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">Skor ITML 2025 Per Entitas</h2>
+                <canvas id="itmlScoresAllEntitiesChart"></canvas>
+            </div>
+
+             <!-- Card 2: Rencana Pemenuhan Rekomendasi (Chart) -->
+            <div class="card lg:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">Pemenuhan Rekomendasi ITML 2025-2026 Per Entitas</h2>
+                <canvas id="recommendationsAllEntitiesChart"></canvas>
+            </div>
+
+            <!-- Card 3: Jumlah Personil TI Per Entitas (Grafik) -->
+            <div class="card lg:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">Jumlah & Prosentase Personil TI Per Entitas</h2>
+                <canvas id="personnelAllEntitiesChart"></canvas>
+            </div>
+
+           
+
+            <!-- Card 4: Jumlah Active User SAP Per Entitas (Grafik) -->
+            <div class="card lg:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">Jumlah Active User SAP Per Entitas</h2>
+                <canvas id="sapActiveUsersAllEntitiesChart"></canvas>
+            </div>
+
+            <!-- Card 5: Persentase Backup Success SAP Per Entitas (Grafik) -->
+            <!-- Diubah kembali ke tampilan per entitas dengan card -->
+            <div class="card lg:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">Backup Success SAP Per Entitas Terpilih</h2>
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl font-bold" id="backup-percentage">--%</div>
+                    <div class="w-full bg-gray-700 rounded-full h-4">
+                        <div id="backup-bar" class="bg-purple-500 h-4 rounded-full transition-all duration-500 ease-out"></div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-400 mt-2" id="backup-stats">-- dari -- backup berhasil.</div>
+            </div>
+
+            <!-- Card 6: Tiket Insiden SAP per Modul (Chart) -->
+            <div class="card lg:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">Tiket Insiden SAP (Open & Closed) Per Entitas</h2>
+                <canvas id="sapIncidentsAllEntitiesChart"></canvas>
+            </div>
+
+            <!-- Card 7: Tiket & Biaya per CR Modul SAP (Multiple Charts) -->
+            <div class="card lg:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">Jumlah Tiket & Biaya CR Modul SAP (Satuan Juta)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-300 text-center mb-2">Modul FI</h3>
+                        <canvas id="sapCRs_FI_Chart"></canvas>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-300 text-center mb-2">Modul CO</h3>
+                        <canvas id="sapCRs_CO_Chart"></canvas>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-300 text-center mb-2">Modul SD</h3>
+                        <canvas id="sapCRs_SD_Chart"></canvas>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-300 text-center mb-2">Modul MM</h3>
+                        <canvas id="sapCRs_MM_Chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 8: Tiket Helpdesk per Entitas (Chart) -->
+            <div class="card lg:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">Tiket Helpdesk (Open & Closed) Per Entitas</h2>
+                <canvas id="helpdeskAllEntitiesChart"></canvas>
+            </div>
+
+            <!-- Card 9: Serapan Komponen Biaya Opex & Capex -->
+            <div class="card lg:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">Serapan Komponen Biaya Opex & Capex Per Entitas (Milyar)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                     <!-- Opex Chart -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-300 text-center mb-2">Opex (Operational Expenditure)</h3>
+                        <canvas id="opexChart"></canvas>
+                    </div>
+                    <!-- Capex Chart -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-300 text-center mb-2">Capex (Capital Expenditure)</h3>
+                        <canvas id="capexChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk menghasilkan angka acak
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Data dummy untuk 12 entitas
+        const entitiesData = {};
+        const entityNames = [
+            "PTPN III", "PTPN I", "PTPN IV", "PT SGN", "KPBN", "RPN",
+            "INL", "IKN", "LPP AN", "SPMN", "KINRA", "BIN"
+        ];
+        
+        // Membangun data dummy untuk setiap entitas
+        entityNames.forEach(name => {
+            const totalBackups = getRandomInt(100, 200);
+            const successfulBackups = getRandomInt(totalBackups * 0.8, totalBackups);
+            const backupPercentage = Math.round((successfulBackups / totalBackups) * 100);
+
+            const totalRecommendations = getRandomInt(100, 670);
+            let notStarted = getRandomInt(1, Math.floor(totalRecommendations / 3));
+            let onProgress = getRandomInt(1, Math.floor((totalRecommendations - notStarted) / 2));
+            let done = totalRecommendations - notStarted - onProgress;
+
+            let itmlScore;
+            if (name === "PTPN III") {
+                itmlScore = 3.32;
+            } else {
+                itmlScore = (Math.random() * (3.32 - 3.01) + 3.01).toFixed(2);
+            }
+
+            // Data dummy baru untuk Opex dan Capex
+            const opexRun = getRandomInt(10, 50);
+            const opexGrow = getRandomInt(5, 25);
+            const opexTransform = getRandomInt(1, 15);
+            const capexRun = getRandomInt(15, 60);
+            const capexGrow = getRandomInt(10, 40);
+            const capexTransform = getRandomInt(5, 30);
+
+
+            entitiesData[name] = {
+                itmlScore: itmlScore,
+                personnelBreakdown: {
+                    tataKelola: getRandomInt(2, 10),
+                    pengembangan: getRandomInt(5, 20),
+                    operasional: getRandomInt(3, 15)
+                },
+                recommendations: {
+                    notStarted: notStarted,
+                    onProgress: onProgress,
+                    done: done
+                },
+                sapActiveUsers: getRandomInt(500, 2000),
+                sapBackupSuccess: {
+                    total: totalBackups,
+                    success: successfulBackups,
+                    percentage: backupPercentage
+                },
+                sapIncidents: {
+                    FI: { open: getRandomInt(1, 10), closed: getRandomInt(10, 50) },
+                    CO: { open: getRandomInt(1, 5), closed: getRandomInt(5, 25) },
+                    SD: { open: getRandomInt(1, 8), closed: getRandomInt(8, 40) },
+                    MM: { open: getRandomInt(1, 6), closed: getRandomInt(6, 30) },
+                },
+                sapCRs: {
+                    FI: { tickets: getRandomInt(5, 20), cost: getRandomInt(50, 200) },
+                    CO: { tickets: getRandomInt(3, 15), cost: getRandomInt(30, 150) },
+                    SD: { tickets: getRandomInt(4, 18), cost: getRandomInt(40, 180) },
+                    MM: { tickets: getRandomInt(2, 12), cost: getRandomInt(20, 120) },
+                },
+                helpdesk: {
+                    open: getRandomInt(20, 100),
+                    closed: getRandomInt(100, 500)
+                },
+                opex: {
+                    run: opexRun,
+                    grow: opexGrow,
+                    transform: opexTransform
+                },
+                capex: {
+                    run: capexRun,
+                    grow: capexGrow,
+                    transform: capexTransform
+                }
+            };
+        });
+
+        // Hitung total personel dari semua entitas
+        const totalPersonnel = entityNames.reduce((sum, name) => {
+            const breakdown = entitiesData[name].personnelBreakdown;
+            return sum + breakdown.tataKelola + breakdown.pengembangan + breakdown.operasional;
+        }, 0);
+        
+        // Hitung total rekomendasi dari semua entitas
+        const totalRecommendationsAll = entityNames.reduce((sum, name) => {
+            const recommendations = entitiesData[name].recommendations;
+            return sum + recommendations.notStarted + recommendations.onProgress + recommendations.done;
+        }, 0);
+
+        // Elemen-elemen DOM
+        const backupPercentageEl = document.getElementById('backup-percentage');
+        const backupStatsEl = document.getElementById('backup-stats');
+        const backupBarEl = document.getElementById('backup-bar');
+
+        // Objek grafik
+        let itmlScoresAllEntitiesChart, personnelAllEntitiesChart, recommendationsAllEntitiesChart, sapActiveUsersAllEntitiesChart, sapIncidentsAllEntitiesChart, sapCRs_FI_Chart, sapCRs_CO_Chart, sapCRs_SD_Chart, sapCRs_MM_Chart, helpdeskAllEntitiesChart, opexChart, capexChart;
+
+        // Fungsi untuk inisialisasi semua grafik
+        function initializeCharts() {
+            // Grafik Skor ITML untuk Semua Entitas
+            const itmlScoresData = {
+                labels: entityNames,
+                datasets: [{
+                    label: 'Skor ITML',
+                    data: entityNames.map(name => entitiesData[name].itmlScore),
+                    backgroundColor: 'rgba(251, 191, 36, 0.8)',
+                    borderColor: '#facc15',
+                    borderWidth: 1
+                }]
+            };
+            itmlScoresAllEntitiesChart = new Chart(document.getElementById('itmlScoresAllEntitiesChart'), {
+                type: 'bar',
+                data: itmlScoresData,
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false }, datalabels: { color: '#fff', formatter: (value) => value, font: { weight: 'bold' }}},
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { beginAtZero: true, max: 5, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                },
+                 plugins: [ChartDataLabels]
+            });
+
+            // Grafik Jumlah & Prosentase Personil TI untuk Semua Entitas
+            const personnelData = {
+                labels: entityNames,
+                datasets: [{
+                    label: 'Bidang Tata Kelola',
+                    data: entityNames.map(name => entitiesData[name].personnelBreakdown.tataKelola),
+                    backgroundColor: '#1e3a8a', // Warna Tata Kelola
+                    borderColor: '#1e3a8a',
+                }, {
+                    label: 'Bidang Pengembangan',
+                    data: entityNames.map(name => entitiesData[name].personnelBreakdown.pengembangan),
+                    backgroundColor: '#059669', // Warna Pengembangan
+                    borderColor: '#059669',
+                }, {
+                    label: 'Bidang Operasional',
+                    data: entityNames.map(name => entitiesData[name].personnelBreakdown.operasional),
+                    backgroundColor: '#dc2626', // Warna Operasional
+                    borderColor: '#dc2626',
+                }]
+            };
+            personnelAllEntitiesChart = new Chart(document.getElementById('personnelAllEntitiesChart'), {
+                type: 'bar',
+                data: personnelData,
+                options: {
+                    responsive: true,
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: '#e2e8f0' } },
+                        datalabels: {
+                            color: '#fff',
+                            formatter: (value, context) => {
+                                const totalPerBar = context.chart.data.datasets.reduce((sum, dataset) => {
+                                    return sum + dataset.data[context.dataIndex];
+                                }, 0);
+                                return totalPerBar;
+                            },
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                },
+                // Register datalabels plugin
+                plugins: [ChartDataLabels]
+            });
+
+            // Grafik Rekomendasi untuk Semua Entitas (Stacked Bar)
+            const recommendationsData = {
+                labels: entityNames,
+                datasets: [{
+                    label: 'Not Started',
+                    data: entityNames.map(name => entitiesData[name].recommendations.notStarted),
+                    backgroundColor: '#e11d48',
+                }, {
+                    label: 'On Progress',
+                    data: entityNames.map(name => entitiesData[name].recommendations.onProgress),
+                    backgroundColor: '#facc15',
+                }, {
+                    label: 'Done',
+                    data: entityNames.map(name => entitiesData[name].recommendations.done),
+                    backgroundColor: '#22c55e',
+                }]
+            };
+            recommendationsAllEntitiesChart = new Chart(document.getElementById('recommendationsAllEntitiesChart'), {
+                type: 'bar',
+                data: recommendationsData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#e2e8f0' } },
+                        datalabels: {
+                            color: '#fff',
+                            formatter: (value, context) => {
+                                return value;
+                            },
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                },
+                // Register datalabels plugin
+                plugins: [ChartDataLabels]
+            });
+
+            // Grafik Active User SAP untuk Semua Entitas
+            const sapActiveUsersData = {
+                labels: entityNames,
+                datasets: [{
+                    label: 'Jumlah Active User',
+                    data: entityNames.map(name => entitiesData[name].sapActiveUsers),
+                    backgroundColor: 'rgba(96, 165, 250, 0.8)',
+                    borderColor: '#60a5fa',
+                    borderWidth: 1
+                }]
+            };
+            sapActiveUsersAllEntitiesChart = new Chart(document.getElementById('sapActiveUsersAllEntitiesChart'), {
+                type: 'bar',
+                data: sapActiveUsersData,
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false }, datalabels: { color: '#fff', formatter: (value) => value, font: { weight: 'bold' }}},
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                },
+                 plugins: [ChartDataLabels]
+            });
+
+            // Grafik Tiket Insiden SAP untuk Semua Entitas
+            const sapIncidentsData = {
+                labels: entityNames,
+                datasets: [{
+                    label: 'Open',
+                    data: entityNames.map(name => {
+                        return entitiesData[name].sapIncidents.FI.open + entitiesData[name].sapIncidents.CO.open + entitiesData[name].sapIncidents.SD.open + entitiesData[name].sapIncidents.MM.open;
+                    }),
+                    backgroundColor: '#f87171',
+                }, {
+                    label: 'Closed',
+                    data: entityNames.map(name => {
+                        return entitiesData[name].sapIncidents.FI.closed + entitiesData[name].sapIncidents.CO.closed + entitiesData[name].sapIncidents.SD.closed + entitiesData[name].sapIncidents.MM.closed;
+                    }),
+                    backgroundColor: '#4ade80',
+                }]
+            };
+            sapIncidentsAllEntitiesChart = new Chart(document.getElementById('sapIncidentsAllEntitiesChart'), {
+                type: 'bar',
+                data: sapIncidentsData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#e2e8f0' } },
+                        datalabels: {
+                            color: '#fff',
+                            formatter: (value, context) => {
+                                const totalPerBar = context.chart.data.datasets.reduce((sum, dataset) => {
+                                    return sum + dataset.data[context.dataIndex];
+                                }, 0);
+                                return totalPerBar;
+                            },
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                },
+                // Register datalabels plugin
+                plugins: [ChartDataLabels]
+            });
+            
+            // Grafik Jumlah Tiket & Biaya CR Modul SAP (Satuan Juta)
+            // FI Chart
+            sapCRs_FI_Chart = new Chart(document.getElementById('sapCRs_FI_Chart'), {
+                type: 'bar',
+                data: {
+                    labels: entityNames,
+                    datasets: [{
+                        type: 'bar',
+                        label: 'Tiket',
+                        data: entityNames.map(name => entitiesData[name].sapCRs.FI.tickets),
+                        backgroundColor: '#60a5fa',
+                    }, {
+                        type: 'line',
+                        label: 'Biaya (k$)',
+                        data: entityNames.map(name => entitiesData[name].sapCRs.FI.cost),
+                        backgroundColor: '#a855f7',
+                        borderColor: '#a855f7',
+                        tension: 0.4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                }
+            });
+
+            // CO Chart
+            sapCRs_CO_Chart = new Chart(document.getElementById('sapCRs_CO_Chart'), {
+                type: 'bar',
+                data: {
+                    labels: entityNames,
+                    datasets: [{
+                        type: 'bar',
+                        label: 'Tiket',
+                        data: entityNames.map(name => entitiesData[name].sapCRs.CO.tickets),
+                        backgroundColor: '#60a5fa',
+                    }, {
+                        type: 'line',
+                        label: 'Biaya (k$)',
+                        data: entityNames.map(name => entitiesData[name].sapCRs.CO.cost),
+                        backgroundColor: '#a855f7',
+                        borderColor: '#a855f7',
+                        tension: 0.4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                }
+            });
+
+            // SD Chart
+            sapCRs_SD_Chart = new Chart(document.getElementById('sapCRs_SD_Chart'), {
+                type: 'bar',
+                data: {
+                    labels: entityNames,
+                    datasets: [{
+                        type: 'bar',
+                        label: 'Tiket',
+                        data: entityNames.map(name => entitiesData[name].sapCRs.SD.tickets),
+                        backgroundColor: '#60a5fa',
+                    }, {
+                        type: 'line',
+                        label: 'Biaya (k$)',
+                        data: entityNames.map(name => entitiesData[name].sapCRs.SD.cost),
+                        backgroundColor: '#a855f7',
+                        borderColor: '#a855f7',
+                        tension: 0.4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                }
+            });
+            
+            // MM Chart
+            sapCRs_MM_Chart = new Chart(document.getElementById('sapCRs_MM_Chart'), {
+                type: 'bar',
+                data: {
+                    labels: entityNames,
+                    datasets: [{
+                        type: 'bar',
+                        label: 'Tiket',
+                        data: entityNames.map(name => entitiesData[name].sapCRs.MM.tickets),
+                        backgroundColor: '#60a5fa',
+                    }, {
+                        type: 'line',
+                        label: 'Biaya (k$)',
+                        data: entityNames.map(name => entitiesData[name].sapCRs.MM.cost),
+                        backgroundColor: '#a855f7',
+                        borderColor: '#a855f7',
+                        tension: 0.4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                }
+            });
+
+            // Grafik Helpdesk untuk Semua Entitas
+            const helpdeskData = {
+                labels: entityNames,
+                datasets: [{
+                    label: 'Open',
+                    data: entityNames.map(name => entitiesData[name].helpdesk.open),
+                    backgroundColor: '#f87171',
+                }, {
+                    label: 'Closed',
+                    data: entityNames.map(name => entitiesData[name].helpdesk.closed),
+                    backgroundColor: '#4ade80',
+                }]
+            };
+            helpdeskAllEntitiesChart = new Chart(document.getElementById('helpdeskAllEntitiesChart'), {
+                type: 'bar',
+                data: helpdeskData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#e2e8f0' } },
+                        datalabels: {
+                            color: '#fff',
+                            formatter: (value, context) => {
+                                const totalPerBar = context.chart.data.datasets.reduce((sum, dataset) => {
+                                    return sum + dataset.data[context.dataIndex];
+                                }, 0);
+                                return totalPerBar;
+                            },
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                },
+                // Register datalabels plugin
+                plugins: [ChartDataLabels]
+            });
+
+            // Grafik Opex
+            const opexData = {
+                labels: entityNames,
+                datasets: [{
+                    label: 'Run',
+                    data: entityNames.map(name => entitiesData[name].opex.run),
+                    backgroundColor: '#2563eb', // Biru
+                }, {
+                    label: 'Grow',
+                    data: entityNames.map(name => entitiesData[name].opex.grow),
+                    backgroundColor: '#facc15', // Kuning
+                }, {
+                    label: 'Transform',
+                    data: entityNames.map(name => entitiesData[name].opex.transform),
+                    backgroundColor: '#dc2626', // Merah
+                }]
+            };
+            opexChart = new Chart(document.getElementById('opexChart'), {
+                type: 'bar',
+                data: opexData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#e2e8f0' } },
+                        datalabels: {
+                             color: '#fff',
+                            formatter: (value) => {
+                                return value;
+                            },
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                },
+                 plugins: [ChartDataLabels]
+            });
+            
+            // Grafik Capex
+            const capexData = {
+                labels: entityNames,
+                datasets: [{
+                    label: 'Run',
+                    data: entityNames.map(name => entitiesData[name].capex.run),
+                    backgroundColor: '#2563eb', // Biru
+                }, {
+                    label: 'Grow',
+                    data: entityNames.map(name => entitiesData[name].capex.grow),
+                    backgroundColor: '#facc15', // Kuning
+                }, {
+                    label: 'Transform',
+                    data: entityNames.map(name => entitiesData[name].capex.transform),
+                    backgroundColor: '#dc2626', // Merah
+                }]
+            };
+            capexChart = new Chart(document.getElementById('capexChart'), {
+                type: 'bar',
+                data: capexData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#e2e8f0' } },
+                        datalabels: {
+                            color: '#fff',
+                            formatter: (value) => {
+                                return value;
+                            },
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#e2e8f0' } }
+                    }
+                },
+                 plugins: [ChartDataLabels]
+            });
+        }
+
+        // Fungsi untuk memperbarui dashboard
+        function updateDashboard(entityName) {
+            const data = entitiesData[entityName];
+            if (!data) return;
+
+            // Memperbarui Backup Success (Card)
+            backupPercentageEl.textContent = data.sapBackupSuccess.percentage + '%';
+            backupStatsEl.textContent = `${data.sapBackupSuccess.success} dari ${data.sapBackupSuccess.total} backup berhasil.`;
+            backupBarEl.style.width = data.sapBackupSuccess.percentage + '%';
+        }
+
+        // Memuat semua grafik dan dropdown saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            // Memperbarui Backup Success dengan data dari PTPN III sebagai default
+            updateDashboard("PTPN III");
+        });
+    </script>
+
+</body>
+</html>
